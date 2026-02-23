@@ -203,6 +203,14 @@ components:
       type: plugin
       name: "claude-md-management@claude-plugins-official"
 
+  - id: plugin-claude-hud
+    displayName: claude-hud
+    description: Context usage, active tools, running agents, and todo progress
+    type: plugin
+    installAction:
+      type: plugin
+      name: "claude-hud@jarrodwatts/claude-hud"
+
   # ── Skills ──────────────────────────────────────────────────────────────
   - id: skill-continuous-learning
     displayName: continuous-learning skill
