@@ -47,6 +47,11 @@ components:
     installAction:
       type: brewInstall
       package: claude-code
+    doctorChecks:
+      - type: commandExists
+        name: Claude Code
+        section: Dependencies
+        command: claude
 
   - id: node
     displayName: Node.js
@@ -92,20 +97,6 @@ components:
     installAction:
       type: brewInstall
       package: uv
-
-  - id: claude-code
-    displayName: Claude Code
-    description: Claude Code CLI
-    type: brewPackage
-    dependencies: [homebrew]
-    installAction:
-      type: shellCommand
-      command: "brew install --cask claude-code"
-    doctorChecks:
-      - type: commandExists
-        name: Claude Code
-        section: Dependencies
-        command: claude
 
   # ── MCP Servers ─────────────────────────────────────────────────────────
   - id: docs-mcp-server
