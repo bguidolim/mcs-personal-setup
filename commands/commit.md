@@ -19,5 +19,3 @@ Branches follow the pattern: `bruno/{ticket}-short-description` (e.g. `bruno/ABC
    - If there are no changes to commit, say so and stop.
 
 3. **Push** the current branch with `-u` flag if needed.
-
-<!-- mcs:managed -->

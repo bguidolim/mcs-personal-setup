@@ -18,6 +18,24 @@
             "command": "bash ~/.claude/hooks/session_start.sh"
           }
         ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/ollama-status.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/ios-simulator-status.sh"
+          }
+        ]
       }
     ]
   },

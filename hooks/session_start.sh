@@ -74,8 +74,6 @@ main() {
         fi
     fi
 
-    # --- mcs:hook-extensions ---
-
     # Create JSON output
     jq -n --arg ctx "$context" '{
         hookSpecificOutput: {

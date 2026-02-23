@@ -1,17 +1,29 @@
-# === OLLAMA STATUS & DOCS-MCP LIBRARY ===
-local ollama_running=false
+#!/bin/bash
+
+set -euo pipefail
+trap 'exit 0' ERR
+
+# Check if jq is available
+command -v jq >/dev/null 2>&1 || exit 0
+
+# Read and validate JSON input
+input_data=$(cat) || exit 0
+echo "$input_data" | jq '.' >/dev/null 2>&1 || exit 0
+
+context=""
+
+# === OLLAMA STATUS ===
+ollama_running=false
 if curl -s --max-time 2 http://localhost:11434/api/tags >/dev/null 2>&1; then
     ollama_running=true
-    context+="\n🦙 Ollama: running"
+    context+="🦙 Ollama: running"
 fi
 
 # If project has a memories directory, ensure docs-mcp-server library is synced
 if [ -d ".claude/memories" ]; then
     if [ "$ollama_running" = true ]; then
-        local repo_name
         repo_name=$(basename "$(git rev-parse --show-toplevel 2>/dev/null)" 2>/dev/null || echo "")
         if [ -n "$repo_name" ]; then
-            local memories_path
             memories_path="$(git rev-parse --show-toplevel 2>/dev/null)/.claude/memories"
 
             # Background: ensure library exists and is up to date.
@@ -37,10 +49,20 @@ if [ -d ".claude/memories" ]; then
                         --silent >/dev/null 2>&1
                 fi
             ) >/dev/null 2>&1 &
-            local sync_pid=$!
+            sync_pid=$!
             ( sleep 120 && kill "$sync_pid" 2>/dev/null ) >/dev/null 2>&1 &
         fi
     else
-        context+="\n⚠️ Ollama not running — docs-mcp semantic search will fail"
+        context+="⚠️ Ollama not running — docs-mcp semantic search will fail"
     fi
+fi
+
+# Output only if we have something to report
+if [ -n "$context" ]; then
+    jq -n --arg ctx "$context" '{
+        hookSpecificOutput: {
+            hookEventName: "SessionStart",
+            additionalContext: $ctx
+        }
+    }'
 fi
