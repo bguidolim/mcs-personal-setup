@@ -237,7 +237,7 @@ components:
     displayName: Ollama status hook
     description: Checks Ollama health and syncs docs-mcp-server library on session start
     type: hookFile
-    dependencies: [ollama, docs-mcp-server]
+    dependencies: [ollama, docs-mcp-server, skill-continuous-learning]
     hookEvent: SessionStart
     installAction:
       type: copyPackFile

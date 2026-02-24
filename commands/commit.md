@@ -4,7 +4,7 @@ Stage, commit, and push changes. No PR creation. This is a **git-only workflow**
 
 ## Branch naming convention
 
-Branches follow the pattern: `bruno/{ticket}-short-description` (e.g. `bruno/ABC-123-fix-login`).
+Branches follow the pattern: `__BRANCH_PREFIX__/{ticket}-short-description` (e.g. `__BRANCH_PREFIX__/ABC-123-fix-login`).
 
 ## Steps
 
