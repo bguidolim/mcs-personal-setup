@@ -12,7 +12,7 @@ prompts:
   - key: PROJECT
     type: fileDetect
     label: "Xcode project / workspace"
-    detectPattern: 
+    detectPattern:
       - "*.xcodeproj"
       - "*.xcworkspace"
 
@@ -30,9 +30,7 @@ components:
     displayName: Homebrew
     description: macOS package manager
     type: brewPackage
-    installAction:
-      type: shellCommand
-      command: '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+    shell: '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
     doctorChecks:
       - type: commandExists
         name: Homebrew
@@ -42,57 +40,36 @@ components:
   - id: node
     displayName: Node.js
     description: JavaScript runtime (for npx-based MCP servers)
-    type: brewPackage
     dependencies: [homebrew]
-    installAction:
-      type: brewInstall
-      package: node
+    brew: node
 
   - id: gh
     displayName: GitHub CLI
     description: GitHub CLI for PR operations
-    type: brewPackage
     dependencies: [homebrew]
-    installAction:
-      type: brewInstall
-      package: gh
+    brew: gh
 
   - id: jq
-    displayName: jq
     description: JSON processor (used by session hooks)
-    type: brewPackage
     dependencies: [homebrew]
-    installAction:
-      type: brewInstall
-      package: jq
+    brew: jq
 
   - id: ollama
     displayName: Ollama
     description: Local LLM runtime with nomic-embed-text model
-    type: brewPackage
     dependencies: [homebrew]
-    installAction:
-      type: brewInstall
-      package: ollama
+    brew: ollama
 
   - id: uv
-    displayName: uv
     description: Python package runner (for Serena MCP server)
-    type: brewPackage
     dependencies: [homebrew]
-    installAction:
-      type: brewInstall
-      package: uv
+    brew: uv
 
   # ── MCP Servers ─────────────────────────────────────────────────────────
   - id: docs-mcp-server
-    displayName: docs-mcp-server
     description: Semantic search over memories using local Ollama embeddings
-    type: mcpServer
     dependencies: [node, ollama]
-    installAction:
-      type: mcpServer
-      name: docs-mcp-server
+    mcp:
       command: npx
       args:
         - "-y"
@@ -107,11 +84,8 @@ components:
   - id: serena
     displayName: Serena
     description: Semantic code navigation, symbol editing, and project context via LSP
-    type: mcpServer
     dependencies: [uv]
-    installAction:
-      type: mcpServer
-      name: serena
+    mcp:
       command: uvx
       args:
         - "--from"
@@ -124,10 +98,8 @@ components:
   - id: xcodebuildmcp
     displayName: XcodeBuildMCP
     description: MCP server for Xcode build, test, and simulator workflows
-    type: mcpServer
     dependencies: [node]
-    installAction:
-      type: mcpServer
+    mcp:
       name: XcodeBuildMCP
       command: npx
       args:
@@ -140,167 +112,119 @@ components:
   - id: sosumi
     displayName: Sosumi
     description: Apple documentation search via MCP (HTTP transport)
-    type: mcpServer
-    installAction:
-      type: mcpServer
-      name: sosumi
-      transport: http
+    mcp:
       url: https://sosumi.ai/mcp
 
   # ── Plugins ─────────────────────────────────────────────────────────────
   - id: plugin-explanatory-output
     displayName: explanatory-output-style
     description: Enhanced output with educational insights and structured formatting
-    type: plugin
-    installAction:
-      type: plugin
-      name: "explanatory-output-style@claude-plugins-official"
+    plugin: "explanatory-output-style@claude-plugins-official"
 
   - id: plugin-pr-review
     displayName: pr-review-toolkit
     description: Specialized PR review agents
-    type: plugin
-    installAction:
-      type: plugin
-      name: "pr-review-toolkit@claude-plugins-official"
+    plugin: "pr-review-toolkit@claude-plugins-official"
 
   - id: plugin-ralph-loop
     displayName: ralph-loop
     description: Iterative refinement loop for complex multi-step tasks
-    type: plugin
-    installAction:
-      type: plugin
-      name: "ralph-loop@claude-plugins-official"
+    plugin: "ralph-loop@claude-plugins-official"
 
   - id: plugin-claude-md
     displayName: claude-md-management
     description: Audit and improve CLAUDE.md files across repositories
-    type: plugin
-    installAction:
-      type: plugin
-      name: "claude-md-management@claude-plugins-official"
+    plugin: "claude-md-management@claude-plugins-official"
 
   - id: plugin-claude-hud
     displayName: claude-hud
     description: Context usage, active tools, running agents, and todo progress
-    type: plugin
-    installAction:
-      type: plugin
-      name: claude-hud@jarrodwatts/claude-hud
+    plugin: claude-hud@jarrodwatts/claude-hud
 
   # ── Skills ──────────────────────────────────────────────────────────────
   - id: skill-continuous-learning
     displayName: continuous-learning skill
     description: Extracts learnings and decisions from sessions into memory
-    type: skill
-    installAction:
-      type: copyPackFile
+    skill:
       source: skills/continuous-learning
       destination: continuous-learning
-      fileType: skill
 
   - id: skill-xcodebuildmcp
     displayName: xcodebuildmcp skill
     description: Loads XcodeBuildMCP tool catalog and workflow guidance
     type: skill
     dependencies: [xcodebuildmcp]
-    installAction:
-      type: shellCommand
-      command: "npx -y skills add cameroncooke/xcodebuildmcp -g -a claude-code -y"
+    shell: "npx -y skills add cameroncooke/xcodebuildmcp -g -a claude-code -y"
 
   # ── Hooks ───────────────────────────────────────────────────────────────
   - id: hook-session-start
     displayName: Session start hook
     description: Shows git status, branch protection, and open PRs on session start
-    type: hookFile
     dependencies: [jq]
     isRequired: true
     hookEvent: SessionStart
-    installAction:
-      type: copyPackFile
+    hook:
       source: hooks/session_start.sh
       destination: session_start.sh
-      fileType: hook
 
   - id: hook-continuous-learning
     displayName: Continuous learning activator
     description: Reminds to evaluate learnings on each prompt
-    type: hookFile
     hookEvent: PreToolUse
-    installAction:
-      type: copyPackFile
+    hook:
       source: hooks/continuous-learning-activator.sh
       destination: continuous-learning-activator.sh
-      fileType: hook
 
   - id: hook-ollama-status
     displayName: Ollama status hook
     description: Checks Ollama health and syncs docs-mcp-server library on session start
-    type: hookFile
     dependencies: [ollama, docs-mcp-server, skill-continuous-learning]
     hookEvent: SessionStart
-    installAction:
-      type: copyPackFile
+    hook:
       source: hooks/ollama-status.sh
       destination: ollama-status.sh
-      fileType: hook
 
   - id: hook-ios-simulator
     displayName: iOS simulator status hook
     description: Reports booted iOS simulator UUID on session start
-    type: hookFile
     dependencies: [jq]
     hookEvent: SessionStart
-    installAction:
-      type: copyPackFile
+    hook:
       source: hooks/ios-simulator-status.sh
       destination: ios-simulator-status.sh
-      fileType: hook
 
   # ── Commands ────────────────────────────────────────────────────────────
   - id: command-pr
     displayName: /pr command
     description: Automates stage, commit, push, and PR creation with ticket extraction
-    type: command
     dependencies: [gh]
-    installAction:
-      type: copyPackFile
+    command:
       source: commands/pr.md
       destination: pr.md
-      fileType: command
 
   - id: command-commit
     displayName: /commit command
     description: Stages, commits, and pushes changes without PR creation
-    type: command
-    installAction:
-      type: copyPackFile
+    command:
       source: commands/commit.md
       destination: commit.md
-      fileType: command
 
   # ── Configuration ───────────────────────────────────────────────────────
   - id: settings
     displayName: Settings
     description: Plan mode, always-thinking, env vars, hooks config, plugins
-    type: configuration
     isRequired: true
-    installAction:
-      type: settingsFile
-      source: config/settings.json
+    settingsFile: config/settings.json
 
   - id: gitignore
     displayName: Global gitignore
     description: Core and iOS gitignore entries
-    type: configuration
     isRequired: true
-    installAction:
-      type: gitignoreEntries
-      entries:
-        - .claude/memories
-        - .claude/settings.local.json
-        - .claude/.mcs-project
-        - .xcodebuildmcp
+    gitignore:
+      - .claude/memories
+      - .claude/settings.local.json
+      - .claude/.mcs-project
+      - .xcodebuildmcp
 
 # ---------------------------------------------------------------------------
 # Templates — CLAUDE.local.md sections
