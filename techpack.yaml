@@ -2,7 +2,7 @@ schemaVersion: 1
 identifier: bruno-setup
 displayName: "Bruno's Personal Setup"
 description: Combined Core + iOS development environment for Claude Code
-version: "1.0.0"
+version: "1.0.1"
 minMCSVersion: "2026.2.24"
 
 # ---------------------------------------------------------------------------
@@ -56,9 +56,26 @@ components:
 
   - id: ollama
     displayName: Ollama
-    description: Local LLM runtime with nomic-embed-text model
-    dependencies: [homebrew]
-    brew: ollama
+    description: Local LLM runtime (official installer, supports all Apple Silicon)
+    type: configuration
+    shell: "curl -fsSL https://ollama.com/install.sh | sh"
+    doctorChecks:
+      - type: commandExists
+        name: Ollama
+        section: Dependencies
+        command: ollama
+
+  - id: ollama-nomic-embed
+    description: Pull nomic-embed-text model for docs-mcp-server embeddings
+    type: configuration
+    dependencies: [ollama]
+    shell: "ollama pull nomic-embed-text"
+    doctorChecks:
+      - type: commandExists
+        name: "nomic-embed-text model"
+        section: AI Models
+        command: ollama
+        args: ["show", "nomic-embed-text"]
 
   - id: uv
     description: Python package runner (for Serena MCP server)
@@ -274,3 +291,9 @@ supplementaryDoctorChecks:
     section: Settings
     keyPath: permissions.defaultMode
     expectedValue: plan
+
+  - type: shellScript
+    name: "Ollama service running"
+    section: AI Models
+    command: "curl -sf http://localhost:11434/api/tags >/dev/null 2>&1"
+    fixCommand: "open -a Ollama"
