@@ -2,7 +2,7 @@ schemaVersion: 1
 identifier: bruno-setup
 displayName: "Bruno's Personal Setup"
 description: Combined Core + iOS development environment for Claude Code
-version: "1.0.2"
+version: "1.0.3"
 minMCSVersion: "2026.2.25"
 
 # ---------------------------------------------------------------------------
@@ -247,20 +247,20 @@ components:
 # Templates — CLAUDE.local.md sections
 # ---------------------------------------------------------------------------
 templates:
-  - sectionIdentifier: bruno-setup.continuous-learning
+  - sectionIdentifier: continuous-learning
     placeholders:
       - __REPO_NAME__
     contentFile: templates/continuous-learning.md
 
-  - sectionIdentifier: bruno-setup.serena
+  - sectionIdentifier: serena
     contentFile: templates/serena.md
 
-  - sectionIdentifier: bruno-setup.ios
+  - sectionIdentifier: ios
     placeholders:
       - __PROJECT__
     contentFile: templates/ios.md
 
-  - sectionIdentifier: bruno-setup.git
+  - sectionIdentifier: git
     placeholders:
       - __BRANCH_PREFIX__
     contentFile: templates/git.md
