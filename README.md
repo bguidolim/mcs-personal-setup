@@ -6,8 +6,8 @@ Built for the [`mcs`](https://github.com/bguidolim/mcs) configuration engine.
 
 ```
 identifier: bruno-setup
-version:    1.0.0
-requires:   mcs >= 2026.2.24
+version:    1.0.2
+requires:   mcs >= 2026.2.25
 ```
 
 ---
