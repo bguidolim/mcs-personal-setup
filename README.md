@@ -1,34 +1,22 @@
-# Bruno's Personal Setup
+# Continuous Learning
 
-A [tech pack](https://github.com/bguidolim/mcs) that turns Claude Code into a **self-improving iOS development environment** — with persistent memory, semantic code navigation, Xcode integration, and opinionated git workflows.
+A [tech pack](https://github.com/bguidolim/mcs) that gives Claude Code **persistent memory across sessions** — capturing debugging discoveries, architectural decisions, and project conventions into a searchable knowledge base that makes Claude increasingly effective over time.
 
 Built for the [`mcs`](https://github.com/bguidolim/mcs) configuration engine.
 
 ```
-identifier: bruno-setup
-version:    1.0.2
+identifier: mcs-continuous-learning
+version:    1.0.0
 requires:   mcs >= 2026.2.25
 ```
 
 ---
 
-## What Is This?
-
-[`mcs`](https://github.com/bguidolim/mcs) is a configuration engine for Claude Code — think Terraform for your AI coding environment. Instead of manually registering MCP servers, copying hook scripts, and editing settings for every project, you define everything in a **tech pack** and let the engine handle installation.
-
-This tech pack packages a complete Claude Code setup: 4 MCP servers, 5 plugins, 4 session hooks, 2 slash commands, custom skills, per-project templates, and a **continuous learning system** that gives Claude long-term memory across sessions.
-
-Tech packs are **composable** — `mcs` can apply multiple packs to the same project, and packs can declare peer dependencies on each other. This setup could easily be split into a general-purpose Core pack and a separate iOS pack. Since it's a personal setup, I chose to keep everything in one place for simplicity.
-
----
-
-## Continuous Learning — The Core Feature
-
-### The Problem
+## The Problem
 
 Claude Code has no memory between sessions. Every conversation starts from zero — solutions discovered yesterday, architecture decisions made last week, debugging breakthroughs from last month — all gone. You end up re-explaining the same context, re-discovering the same workarounds, and re-making the same decisions.
 
-### The Solution
+## The Solution
 
 This pack implements a **closed-loop knowledge system** that captures valuable insights during work and resurfaces them automatically when they're relevant again.
 
@@ -57,6 +45,10 @@ This pack implements a **closed-loop knowledge system** that captures valuable i
          session start
 ```
 
+---
+
+## How It Works
+
 ### The Four Pieces
 
 | Piece | What | How |
@@ -66,7 +58,23 @@ This pack implements a **closed-loop knowledge system** that captures valuable i
 | **Memory Files** | Persistent storage | Structured markdown files in `.claude/memories/` — version-controlled, human-readable, editable |
 | **Semantic Search** | Retrieval at session start | `docs-mcp-server` + Ollama embeddings index memory files and serve them via natural-language search |
 
-### Memory Types
+### The Feedback Loop
+
+1. **Session starts** — the Ollama status hook detects `.claude/memories/` and re-indexes all memory files into a vector store using `nomic-embed-text` embeddings (runs in the background, doesn't block the session)
+
+2. **Before any task** — a `CLAUDE.local.md` instruction tells Claude to search the knowledge base first (`search_docs` with the project name), surfacing relevant past learnings and decisions
+
+3. **During work** — the activator hook fires on every prompt, reminding Claude to evaluate whether the current interaction produced knowledge worth saving
+
+4. **After valuable work** — the continuous learning skill extracts structured memories, checks for duplicates against the existing KB, and writes them to `.claude/memories/`
+
+5. **Next session** — the new memories are indexed, and the loop continues
+
+Over time, the project accumulates a searchable knowledge base that makes Claude increasingly effective — debugging patterns don't need to be rediscovered, architectural decisions don't need to be re-justified, and conventions don't need to be re-explained.
+
+---
+
+## Memory Types
 
 The system captures two categories of knowledge:
 
@@ -77,7 +85,7 @@ The system captures two categories of knowledge:
 .claude/memories/learning_xcode_preview_crash_missing_environment.md
 ```
 
-Each learning follows a structured template: **Problem → Trigger Conditions → Solution → Verification → Example → Notes → References**.
+Each learning follows a structured template: **Problem > Trigger Conditions > Solution > Verification > Example > Notes > References**.
 
 **Decisions** — deliberate architectural and convention choices:
 ```
@@ -86,21 +94,7 @@ Each learning follows a structured template: **Problem → Trigger Conditions �
 .claude/memories/decision_codestyle_naming_conventions.md
 ```
 
-Decisions use an ADR-inspired template: **Decision → Context → Options Considered → Choice → Consequences → Scope → Examples**.
-
-### The Feedback Loop in Practice
-
-1. **Session starts** → the Ollama status hook detects `.claude/memories/` and re-indexes all memory files into a vector store using `nomic-embed-text` embeddings (runs in the background, doesn't block the session)
-
-2. **Before any task** → a `CLAUDE.local.md` instruction tells Claude to search the knowledge base first (`search_docs` with the project name), surfacing relevant past learnings and decisions
-
-3. **During work** → the activator hook fires on every prompt, reminding Claude to evaluate whether the current interaction produced knowledge worth saving
-
-4. **After valuable work** → the continuous learning skill extracts structured memories, checks for duplicates against the existing KB, and writes them to `.claude/memories/`
-
-5. **Next session** → the new memories are indexed, and the loop continues
-
-Over time, the project accumulates a searchable knowledge base that makes Claude increasingly effective — debugging patterns don't need to be rediscovered, architectural decisions don't need to be re-justified, and conventions don't need to be re-explained.
+Decisions use an ADR-inspired template: **Decision > Context > Options Considered > Choice > Consequences > Scope > Examples**.
 
 ---
 
@@ -111,83 +105,37 @@ Over time, the project accumulates a searchable knowledge base that makes Claude
 | Server | Description |
 |--------|-------------|
 | **docs-mcp-server** | Semantic search over project memories using local Ollama embeddings |
-| **Serena** | LSP-powered code navigation and symbol-level editing via language server |
-| **XcodeBuildMCP** | Build, test, run, and manage iOS simulators through Xcode — no raw `xcodebuild` |
-| **Sosumi** | Apple developer documentation search |
-
-### Plugins
-
-| Plugin | Description |
-|--------|-------------|
-| **explanatory-output-style** | Structured, educational response formatting with insight callouts |
-| **pr-review-toolkit** | Specialized agents for code review, silent failure hunting, type design analysis |
-| **ralph-loop** | Iterative refinement loop for complex multi-step tasks |
-| **claude-md-management** | Audit and improve `CLAUDE.md` files across repositories |
-| **claude-hud** | On-screen display showing context usage, active tools, and agent status |
-
-### Session Hooks
-
-| Hook | Event | What It Does |
-|------|-------|-------------|
-| **session_start.sh** | `SessionStart` | Injects git status, branch protection warnings, ahead/behind tracking, open PRs |
-| **ollama-status.sh** | `SessionStart` | Checks Ollama health, background-indexes memory files for semantic search |
-| **ios-simulator-status.sh** | `SessionStart` | Detects booted iOS simulator and reports its UUID |
-| **continuous-learning-activator.sh** | `PreToolUse` | Reminds Claude to evaluate knowledge extraction after each prompt |
-
-### Slash Commands
-
-| Command | Description |
-|---------|-------------|
-| `/commit` | Stage, commit, push — analyzes the actual diff, writes structured commit messages |
-| `/pr` | Full pipeline: commit → push → create PR via `gh` → trigger knowledge capture |
 
 ### Skills
 
 | Skill | Description |
 |-------|-------------|
 | **continuous-learning** | Extracts learnings and decisions from sessions into structured memory files |
-| **xcodebuildmcp** | Loads XcodeBuildMCP tool catalog and workflow guidance |
+
+### Session Hooks
+
+| Hook | Event | What It Does |
+|------|-------|-------------|
+| **ollama-status.sh** | `SessionStart` | Checks Ollama health, background-indexes memory files for semantic search |
+| **continuous-learning-activator.sh** | `PreToolUse` | Reminds Claude to evaluate knowledge extraction after each prompt |
+
+### Slash Commands
+
+| Command | Description |
+|---------|-------------|
+| `/pr` | Full pipeline: commit > push > create PR via `gh` > trigger knowledge capture |
 
 ### Templates (CLAUDE.local.md)
 
 | Section | Instructions |
 |---------|-------------|
 | **continuous-learning** | Always search the KB before starting any task |
-| **serena** | Prefer Serena's symbolic tools over Read/Edit for Swift files |
-| **ios** | Use XcodeBuildMCP for all build/test, target simulator by UUID, never suppress warnings |
-| **git** | Branch naming conventions, read-only PR reviews, commit message format |
 
 ### Settings
 
 | Setting | Value | Purpose |
 |---------|-------|---------|
-| `defaultMode` | `plan` | Claude asks for approval before making changes |
-| `alwaysThinkingEnabled` | `true` | Extended thinking on every response |
-| `ANTHROPIC_DEFAULT_HAIKU_MODEL` | `claude-sonnet-4-6` | Upgrades lightweight model tasks to Sonnet |
 | `CLAUDE_CODE_DISABLE_AUTO_MEMORY` | `1` | Disables built-in memory in favor of the continuous learning system |
-
----
-
-## Session Lifecycle
-
-When you start a Claude Code session in a project configured with this pack, here's what happens before you type a single prompt:
-
-```
-claude                           ← you start a session
-  │
-  ├─ SessionStart hooks fire:
-  │   ├─ session_start.sh        → "Branch: feature/login, ⬆️ 2 commits ahead, 🔀 Open PR #42"
-  │   ├─ ollama-status.sh        → "🦙 Ollama: running" + background re-index of memories
-  │   └─ ios-simulator-status.sh → "Booted Simulator: iPhone 16 Pro [UUID]"
-  │
-  ├─ CLAUDE.local.md loads:
-  │   ├─ "Search the KB before any task"
-  │   ├─ "Use Serena for Swift files"
-  │   ├─ "Use XcodeBuildMCP for builds"
-  │   └─ "Branch naming: feature/{ticket}-description"
-  │
-  └─ Claude is now context-aware, memory-equipped, and ready to work
-```
 
 ---
 
@@ -197,7 +145,7 @@ claude                           ← you start a session
 
 - macOS (Apple Silicon or Intel)
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI
-- Xcode Command Line Tools (`xcode-select --install`)
+- [Ollama](https://ollama.com) — local LLM runtime for embeddings
 
 ### Setup
 
@@ -206,68 +154,47 @@ claude                           ← you start a session
 brew install bguidolim/tap/my-claude-setup
 
 # 2. Register this tech pack
-mcs pack add https://github.com/bguidolim/mcs-personal-setup
+mcs pack add bguidolim/mcs-continuous-learning
 
 # 3. Sync your project
-cd ~/Developer/my-ios-project
+cd ~/Developer/my-project
 mcs sync
 
 # 4. Verify everything is healthy
 mcs doctor
 ```
 
-During `mcs sync`, you'll be prompted for:
-
-| Prompt | What It Does | Default |
-|--------|-------------|---------|
-| **Xcode project** | Auto-detects `*.xcodeproj` / `*.xcworkspace` files for XcodeBuildMCP | *(detected)* |
-| **Branch prefix** | Sets git branch naming convention (e.g. `feature/ABC-123-login`) | `feature` |
-
 ---
 
 ## Directory Structure
 
 ```
-mcs-personal-setup/
+mcs-continuous-learning/
 ├── techpack.yaml                       # Manifest — defines all components
 ├── config/
-│   └── settings.json                   # Claude Code settings (plan mode, env vars)
+│   └── settings.json                   # Disables built-in auto-memory
 ├── hooks/
-│   ├── session_start.sh                # Git status + branch protection
 │   ├── ollama-status.sh                # Ollama health + memory re-indexing
-│   ├── ios-simulator-status.sh         # Booted simulator detection
 │   └── continuous-learning-activator.sh # Knowledge extraction reminder
 ├── commands/
-│   ├── commit.md                       # /commit slash command
-│   └── pr.md                           # /pr slash command
+│   └── pr.md                           # /pr slash command (triggers learning capture)
 ├── skills/
 │   └── continuous-learning/
 │       ├── SKILL.md                    # Extraction rules and workflow
 │       └── references/
 │           └── templates.md            # Learning + Decision memory templates
-├── templates/
-│   ├── continuous-learning.md          # "Search KB before any task"
-│   ├── serena.md                       # "Use Serena for Swift"
-│   ├── ios.md                          # iOS simulator + XcodeBuildMCP rules
-│   └── git.md                          # Branch naming + commit conventions
-└── scripts/
-    └── configure-xcode.sh              # Creates .xcodebuildmcp/config.yaml
+└── templates/
+    └── continuous-learning.md          # "Search KB before any task"
 ```
 
 ---
 
-## Customization
+## You Might Also Be Interested In
 
-You don't need to install everything. Run `mcs sync --customize` and select only the components you want — skip the iOS tooling, pick just the continuous learning system, or mix and match.
-
-For deeper changes, fork the pack and make it yours:
-
-1. **Fork** this repository
-2. **Edit** `techpack.yaml` — add or remove components, change identifiers
-3. **Modify** templates, hooks, or skills to match your workflow
-4. **Register** your fork: `mcs pack add https://github.com/you/your-fork`
-
-The `techpack.yaml` schema is documented in the [MCS tech pack schema reference](https://github.com/bguidolim/mcs/blob/main/docs/techpack-schema.md).
+| Pack | Description |
+|------|-------------|
+| [mcs-core-pack](https://github.com/bguidolim/mcs-core-pack) | Foundational settings, plugins, git workflows, and Serena code navigation |
+| [mcs-ios-pack](https://github.com/bguidolim/mcs-ios-pack) | Xcode integration, simulator management, and Apple documentation |
 
 ---
 

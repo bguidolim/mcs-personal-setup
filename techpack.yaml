@@ -1,28 +1,21 @@
 schemaVersion: 1
-identifier: bruno-setup
-displayName: "Bruno's Personal Setup"
-description: Combined Core + iOS development environment for Claude Code
-version: "1.0.3"
+identifier: mcs-continuous-learning
+displayName: "Continuous Learning"
+description: Persistent memory and knowledge management for Claude Code
+version: "1.0.0"
 minMCSVersion: "2026.2.25"
 
 # ---------------------------------------------------------------------------
 # Prompts — resolved interactively during `mcs configure`
 # ---------------------------------------------------------------------------
 prompts:
-  - key: PROJECT
-    type: fileDetect
-    label: "Xcode project / workspace"
-    detectPattern:
-      - "*.xcodeproj"
-      - "*.xcworkspace"
-
   - key: BRANCH_PREFIX
     type: input
     label: "Branch prefix (e.g. feature) -> feature/add-login-screen"
     default: "feature"
 
 # ---------------------------------------------------------------------------
-# Components (short IDs — auto-prefixed by engine with `bruno-setup.`)
+# Components (short IDs — auto-prefixed by engine with `mcs-continuous-learning.`)
 # ---------------------------------------------------------------------------
 components:
   # ── Dependencies ────────────────────────────────────────────────────────
@@ -50,7 +43,7 @@ components:
     brew: gh
 
   - id: jq
-    description: JSON processor (used by session hooks)
+    description: JSON processor (used by hooks)
     dependencies: [homebrew]
     brew: jq
 
@@ -77,11 +70,6 @@ components:
         command: ollama
         args: ["show", "nomic-embed-text"]
 
-  - id: uv
-    description: Python package runner (for Serena MCP server)
-    dependencies: [homebrew]
-    brew: uv
-
   # ── MCP Servers ─────────────────────────────────────────────────────────
   - id: docs-mcp-server
     description: Semantic search over memories using local Ollama embeddings
@@ -98,66 +86,6 @@ components:
         OPENAI_API_BASE: "http://localhost:11434/v1"
         DOCS_MCP_EMBEDDING_MODEL: "openai:nomic-embed-text"
 
-  - id: serena
-    displayName: Serena
-    description: Semantic code navigation, symbol editing, and project context via LSP
-    dependencies: [uv]
-    mcp:
-      command: uvx
-      args:
-        - "--from"
-        - "git+https://github.com/oraios/serena"
-        - "serena"
-        - "start-mcp-server"
-        - "--context=claude-code"
-        - "--project-from-cwd"
-
-  - id: xcodebuildmcp
-    displayName: XcodeBuildMCP
-    description: MCP server for Xcode build, test, and simulator workflows
-    dependencies: [node]
-    mcp:
-      name: XcodeBuildMCP
-      command: npx
-      args:
-        - "-y"
-        - "xcodebuildmcp@latest"
-        - "mcp"
-      env:
-        XCODEBUILDMCP_SENTRY_DISABLED: "1"
-
-  - id: sosumi
-    displayName: Sosumi
-    description: Apple documentation search via MCP (HTTP transport)
-    mcp:
-      url: https://sosumi.ai/mcp
-
-  # ── Plugins ─────────────────────────────────────────────────────────────
-  - id: plugin-explanatory-output
-    displayName: explanatory-output-style
-    description: Enhanced output with educational insights and structured formatting
-    plugin: "explanatory-output-style@claude-plugins-official"
-
-  - id: plugin-pr-review
-    displayName: pr-review-toolkit
-    description: Specialized PR review agents
-    plugin: "pr-review-toolkit@claude-plugins-official"
-
-  - id: plugin-ralph-loop
-    displayName: ralph-loop
-    description: Iterative refinement loop for complex multi-step tasks
-    plugin: "ralph-loop@claude-plugins-official"
-
-  - id: plugin-claude-md
-    displayName: claude-md-management
-    description: Audit and improve CLAUDE.md files across repositories
-    plugin: "claude-md-management@claude-plugins-official"
-
-  - id: plugin-claude-hud
-    displayName: claude-hud
-    description: Context usage, active tools, running agents, and todo progress
-    plugin: claude-hud@jarrodwatts/claude-hud
-
   # ── Skills ──────────────────────────────────────────────────────────────
   - id: skill-continuous-learning
     displayName: continuous-learning skill
@@ -166,24 +94,7 @@ components:
       source: skills/continuous-learning
       destination: continuous-learning
 
-  - id: skill-xcodebuildmcp
-    displayName: xcodebuildmcp skill
-    description: Loads XcodeBuildMCP tool catalog and workflow guidance
-    type: skill
-    dependencies: [xcodebuildmcp]
-    shell: "npx -y skills add cameroncooke/xcodebuildmcp -g -a claude-code -y"
-
   # ── Hooks ───────────────────────────────────────────────────────────────
-  - id: hook-session-start
-    displayName: Session start hook
-    description: Shows git status, branch protection, and open PRs on session start
-    dependencies: [jq]
-    isRequired: true
-    hookEvent: SessionStart
-    hook:
-      source: hooks/session_start.sh
-      destination: session_start.sh
-
   - id: hook-continuous-learning
     displayName: Continuous learning activator
     description: Reminds to evaluate learnings on each prompt
@@ -195,20 +106,11 @@ components:
   - id: hook-ollama-status
     displayName: Ollama status hook
     description: Checks Ollama health and syncs docs-mcp-server library on session start
-    dependencies: [ollama, docs-mcp-server, skill-continuous-learning]
+    dependencies: [ollama, docs-mcp-server, skill-continuous-learning, jq]
     hookEvent: SessionStart
     hook:
       source: hooks/ollama-status.sh
       destination: ollama-status.sh
-
-  - id: hook-ios-simulator
-    displayName: iOS simulator status hook
-    description: Reports booted iOS simulator UUID on session start
-    dependencies: [jq]
-    hookEvent: SessionStart
-    hook:
-      source: hooks/ios-simulator-status.sh
-      destination: ios-simulator-status.sh
 
   # ── Commands ────────────────────────────────────────────────────────────
   - id: command-pr
@@ -219,29 +121,19 @@ components:
       source: commands/pr.md
       destination: pr.md
 
-  - id: command-commit
-    displayName: /commit command
-    description: Stages, commits, and pushes changes without PR creation
-    command:
-      source: commands/commit.md
-      destination: commit.md
-
   # ── Configuration ───────────────────────────────────────────────────────
   - id: settings
     displayName: Settings
-    description: Plan mode, always-thinking, env vars, hooks config, plugins
+    description: Disables auto-memory in favor of continuous learning system
     isRequired: true
     settingsFile: config/settings.json
 
   - id: gitignore
     displayName: Global gitignore
-    description: Core and iOS gitignore entries
+    description: Ignores memory files from version control
     isRequired: true
     gitignore:
       - .claude/memories
-      - .claude/settings.local.json
-      - .claude/.mcs-project
-      - .xcodebuildmcp
 
 # ---------------------------------------------------------------------------
 # Templates — CLAUDE.local.md sections
@@ -252,47 +144,10 @@ templates:
       - __REPO_NAME__
     contentFile: templates/continuous-learning.md
 
-  - sectionIdentifier: serena
-    contentFile: templates/serena.md
-
-  - sectionIdentifier: ios
-    placeholders:
-      - __PROJECT__
-    contentFile: templates/ios.md
-
-  - sectionIdentifier: git
-    placeholders:
-      - __BRANCH_PREFIX__
-    contentFile: templates/git.md
-
-# ---------------------------------------------------------------------------
-# Configure project script — runs during `mcs configure`
-# ---------------------------------------------------------------------------
-configureProject:
-  script: scripts/configure-xcode.sh
-
 # ---------------------------------------------------------------------------
 # Supplementary doctor checks
 # ---------------------------------------------------------------------------
 supplementaryDoctorChecks:
-  - type: commandExists
-    name: Xcode Command Line Tools
-    section: iOS
-    command: xcode-select
-    args: ["-p"]
-    fixCommand: "xcode-select --install"
-
-  - type: hookEventExists
-    name: SessionStart hook
-    section: Hooks
-    event: SessionStart
-
-  - type: settingsKeyEquals
-    name: Plan mode enabled
-    section: Settings
-    keyPath: permissions.defaultMode
-    expectedValue: plan
-
   - type: commandExists
     name: "Ollama service running"
     section: AI Models
