@@ -3,7 +3,7 @@ identifier: mcs-continuous-learning
 displayName: "Continuous Learning"
 description: Persistent memory and knowledge management for Claude Code
 version: "1.0.0"
-minMCSVersion: "2026.2.25"
+minMCSVersion: "2026.2.28"
 
 # ---------------------------------------------------------------------------
 # Prompts — resolved interactively during `mcs configure`
@@ -141,7 +141,7 @@ components:
 templates:
   - sectionIdentifier: continuous-learning
     placeholders:
-      - __REPO_NAME__
+      - __PROJECT_DIR_NAME__
     contentFile: templates/continuous-learning.md
 
 # ---------------------------------------------------------------------------
