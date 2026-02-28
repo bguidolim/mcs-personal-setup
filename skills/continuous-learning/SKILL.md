@@ -1,30 +1,16 @@
 ---
 name: continuous-learning
-description: |
-  Continuous learning system that monitors all user requests and interactions to identify
-  learning opportunities and project decisions. Active during: (1) Every user request and task,
-  (2) All coding sessions and problem-solving activities, (3) When discovering solutions, patterns,
-  or techniques, (4) When making architectural or design decisions, (5) When establishing best
-  practices or preferences, (6) During /retrospective sessions. Automatically evaluates whether
-  current work contains valuable knowledge or decisions and saves memories as files in
-  <project>/.claude/memories/.
-allowed-tools:
-  - Write
-  - Read
-  - Glob
-  - Edit
-  - Bash
-  - mcp__docs-mcp-server__search_docs
-  - mcp__docs-mcp-server__list_libraries
-  - AskUserQuestion
-  - TaskCreate
-  - TaskUpdate
-  - TaskList
+description: >
+  Extracts reusable knowledge (debugging discoveries, architectural decisions, conventions)
+  from work sessions and saves them as structured memory files in .claude/memories/.
+allowed-tools: Write, Read, Glob, Edit, Bash, WebSearch, mcp__docs-mcp-server__search_docs, mcp__docs-mcp-server__list_libraries, AskUserQuestion, TaskCreate, TaskUpdate, TaskList
 ---
 
 # Continuous Learning Skill
 
 Extract reusable knowledge from work sessions and save it as memory files in `<project>/.claude/memories/`.
+
+> **Note:** `<project>` refers to the current working directory (project root) throughout this document.
 
 ## Memory Categories
 
