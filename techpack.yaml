@@ -104,14 +104,14 @@ components:
       source: hooks/continuous-learning-activator.sh
       destination: continuous-learning-activator.sh
 
-  - id: hook-ollama-status
-    displayName: Ollama status hook
+  - id: hook-sync-memories
+    displayName: Sync memories hook
     description: Checks Ollama health and syncs docs-mcp-server library on session start
     dependencies: [ollama, docs-mcp-server, skill-continuous-learning, jq]
     hookEvent: SessionStart
     hook:
-      source: hooks/ollama-status.sh
-      destination: ollama-status.sh
+      source: hooks/sync-memories.sh
+      destination: sync-memories.sh
 
   # ── Commands ────────────────────────────────────────────────────────────
   - id: command-pr

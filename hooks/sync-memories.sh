@@ -16,7 +16,6 @@ context=""
 ollama_running=false
 if curl -s --max-time 2 http://localhost:11434/api/tags >/dev/null 2>&1; then
     ollama_running=true
-    context+="🦙 Ollama: running"
 fi
 
 # If project has a memories directory, ensure docs-mcp-server library is synced
