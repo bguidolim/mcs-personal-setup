@@ -133,7 +133,8 @@ components:
     description: Ignores memory files from version control
     isRequired: true
     gitignore:
-      - .claude/memories
+      - "*.local.*"
+      - ".claude/memories"
 
 # ---------------------------------------------------------------------------
 # Templates — CLAUDE.local.md sections
