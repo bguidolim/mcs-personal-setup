@@ -6,7 +6,6 @@ Built for the [`mcs`](https://github.com/bguidolim/mcs) configuration engine.
 
 ```
 identifier: mcs-continuous-learning
-version:    1.0.0
 requires:   mcs >= 2026.2.28
 ```
 
